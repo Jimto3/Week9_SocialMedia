@@ -69,7 +69,7 @@ export default async function getMessages({ post, reply }) {
                                 comment_id={post.id}
                                 likeamount={likes.rows.length}
                             >
-                                <h2>{likeMessage}</h2>
+                                {likeMessage}
                             </HoverLike>
                         </div>
                     </div>
