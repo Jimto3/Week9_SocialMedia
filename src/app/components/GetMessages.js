@@ -1,11 +1,11 @@
+"use server";
 import { sql } from "@vercel/postgres";
 import Link from "next/link";
 import ReplyDropdown from "./ReplyDropdown";
 import { auth } from "@clerk/nextjs";
-import LikeButton from "./LikeButton";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import HoverLike from "./HoverLike.js";
+import GetRandomLikes from "./GetRandomLikes";
 
 export default async function getMessages({ post, reply }) {
     const { userId } = auth();
@@ -18,20 +18,17 @@ export default async function getMessages({ post, reply }) {
     const currentUser =
         await sql`SELECT * FROM fb_users WHERE auth_id=${userId}`;
 
-    let likes = null;
-    let likeCheck = null;
-    if (reply) {
-        likes =
-            await sql`SELECT * FROM fb_replylikes WHERE reply_id=${post.id}`;
-        likeCheck =
-            await sql`SELECT * FROM fb_replylikes WHERE user_id=${currentUser.rows[0].id}`;
-    } else {
-        likes =
-            await sql`SELECT * FROM fb_commentlikes WHERE comment_id=${post.id}`;
-        likeCheck =
-            await sql`SELECT * FROM fb_commentlikes WHERE user_id=${currentUser.rows[0].id} AND comment_id=${post.id}`;
-    }
-    const likeMessage = GetRandomLikes();
+    const likes =
+        await sql`SELECT fb_users.name, fb_users.id FROM fb_commentlikes JOIN fb_users ON fb_users.id = fb_commentlikes.user_id WHERE comment_id=${post.id}`;
+    const likeCheck =
+        await sql`SELECT * FROM fb_commentlikes WHERE user_id=${currentUser.rows[0].id} AND comment_id=${post.id}`;
+
+    const likeNames = likes.rows.map((like) => like.name);
+    const likeIds = likes.rows.map((like) => like.id);
+    const likeMessage = GetRandomLikes(likes, likeIds, likeNames);
+    // console.log(likeMessage);
+    // console.log(likes);
+    // console.log(`post: ${post}, post_id: ${post.id}`);
 
     await delay(300);
     return (
@@ -65,12 +62,11 @@ export default async function getMessages({ post, reply }) {
                         </Link>
                     </div>
                     <div className="flex items-center justify-end">
-                        <div className="flex flex-row gap-2 mr-2 h-6">
+                        <div className="flex flex-row gap-2 mr-2">
                             <HoverLike
                                 liked={likeCheck.rows.length != 0}
-                                reply={reply}
+                                reply={false}
                                 comment_id={post.id}
-                                validate={validate}
                                 likeamount={likes.rows.length}
                             >
                                 <h2>{likeMessage}</h2>
@@ -84,7 +80,11 @@ export default async function getMessages({ post, reply }) {
                     {reply ? null : rows.length === 0 ? (
                         <h3 className="pr-4">{`No Replies :(`}</h3>
                     ) : (
-                        <ReplyDropdown content={rows} />
+                        <ReplyDropdown
+                            content={rows}
+                            reply={true}
+                            comment_id={post.id}
+                        />
                     )}
                 </div>
             </div>
@@ -96,47 +96,9 @@ export default async function getMessages({ post, reply }) {
             setTimeout(resolve, timeout);
         });
     }
+}
 
-    async function validate() {
-        "use server";
-        revalidatePath("/posts");
-        redirect("/posts");
-    }
-
-    async function GetRandomLikes() {
-        let val1 = "";
-        let val2 = "";
-
-        if (likes.rows.length <= 2) {
-            if (likes.rows.length == 0) {
-                return "No one has liked this post yet :(";
-            }
-
-            const likeNames = await likes.rows.map(async (like) => {
-                "use server";
-                const likeName =
-                    await sql`SELECT name FROM fb_users WHERE id=${like.user_id}`;
-                console.log(likeName.rows[0].name);
-                return `${likeName.rows[0].name}`;
-            });
-            // return likeNames;
-            return `${likeNames} and ${likeNames[1]} have liked this post`;
-        }
-
-        while (val1 == val2) {
-            const random1 =
-                likes.rows[Math.floor(Math.random() * likes.rows.length)]
-                    .user_id;
-            const random2 =
-                likes.rows[Math.floor(Math.random() * likes.rows.length)]
-                    .user_id;
-        }
-        return async function getUserName() {
-            val1 = await sql`SELECT name FROM fb_users WHERE id=${random1}`;
-            val2 = await sql`SELECT name FROM fb_users WHERE id=${random2}`;
-            return `${val1}, ${val2} and ${
-                likes.rows.length - 2
-            } More have liked this post!`;
-        };
-    }
+export async function validate() {
+    "use server";
+    revalidatePath("/posts");
 }

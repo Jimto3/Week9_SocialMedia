@@ -7,14 +7,10 @@ export default function HoverLike({
     liked,
     reply,
     comment_id,
-    validate,
     likeamount,
+    reply_id,
 }) {
-    // liked,
-    // reply,
-    // comment_id,
-    // validate,
-    // likeamount,
+    // console.log(comment_id);
     return (
         <HoverCard.Root>
             <HoverCard.Trigger>
@@ -22,8 +18,8 @@ export default function HoverLike({
                     liked={liked}
                     reply={reply}
                     comment_id={comment_id}
-                    validate={validate}
                     likeamount={likeamount}
+                    reply_id={reply_id}
                 />
             </HoverCard.Trigger>
             <HoverCard.Portal>

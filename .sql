@@ -59,4 +59,5 @@ INSERT INTO fb_comments(user_id, name, message, category_id) VALUES(
     1, 'admin', 'This is just a test Post... sry', 1
 )
 
-INSERT INTO fb_replies(name, reply, comment_id) VALUES ('admin', 'This is just a Test reply... sry :(', 2)
+INSERT INTO fb_replies(name, reply, comment_id) VALUES 
+('admin', 'This is just a Test reply... sry :(', 2)

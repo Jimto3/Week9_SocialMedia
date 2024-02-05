@@ -48,6 +48,7 @@ export default async function AddPost({ params }) {
                         })}
                     </select>
                     <FormButton
+                        wait="loading..."
                         type="submit"
                         className="bg-lime-400 hover:bg-lime-500 border-2 border-black rounded p-2 mt-4 w-[60%]"
                     >
@@ -62,7 +63,9 @@ export default async function AddPost({ params }) {
         "use server";
         const message = formData.get("message");
         const category = formData.get("categories");
-        await sql`INSERT INTO fb_comments(user_id, name, message, category_id) VALUES (${rows[0].id}, ${rows[0].name}, ${message}, ${category})`;
+        await sql`INSERT INTO fb_comments(user_id, name, message, category_id, archive) VALUES (${
+            rows[0].id
+        }, ${rows[0].name}, ${message}, ${category}, ${false})`;
         revalidatePath(`/posts/${params.id}`);
         revalidatePath("/posts");
         redirect(`/posts/${params.id}`);

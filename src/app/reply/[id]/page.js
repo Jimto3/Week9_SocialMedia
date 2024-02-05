@@ -18,7 +18,7 @@ export default async function ReplyPage({ params }) {
                     </div>
                 }
             >
-                <GetMessages post={rows[0]} reply={true} />
+                <GetMessages post={rows[0]} reply={false} />
             </Suspense>
 
             <div className="flex justify-center">
@@ -37,6 +37,7 @@ export default async function ReplyPage({ params }) {
                             required
                         ></textarea>
                         <FormButton
+                            wait="loading..."
                             type="submit"
                             className="bg-lime-400 hover:bg-lime-500 border-2 border-black rounded p-2 mt-4 w-[60%]"
                         >
@@ -51,9 +52,9 @@ export default async function ReplyPage({ params }) {
     async function handleSubmit(formData) {
         "use server";
         const user = await sql`SELECT * FROM fb_users WHERE auth_id=${userId}`;
-        await sql`INSERT INTO fb_replies(name, reply, comment_id) VALUES (${
+        await sql`INSERT INTO fb_replies(name, reply, comment_id, archive) VALUES (${
             user.rows[0].name
-        }, ${formData.get("message")}, ${params.id})`;
+        }, ${formData.get("message")}, ${params.id}, ${false})`;
         revalidatePath(`/reply/${params.id}`);
         revalidatePath(`/posts`);
         revalidatePath(`/posts/${params.id}`);
