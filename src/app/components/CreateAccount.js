@@ -42,10 +42,18 @@ export default async function CreateAccount() {
 
     async function handleSubmit(formData) {
         "use server";
-        await sql`INSERT INTO fb_users(name, bio, auth_id) VALUES (${formData.get(
-            "name"
-        )}, ${formData.get("bio")}, ${userId})`;
-        revalidatePath("/");
-        redirect("/");
+        const usernameCheck =
+            await sql`SELECT * FROM fb_users WHERE name=${formData.get(
+                "name"
+            )}`;
+        if (usernameCheck.length == 0) {
+            await sql`INSERT INTO fb_users(name, bio, auth_id) VALUES (${formData.get(
+                "name"
+            )}, ${formData.get("bio")}, ${userId})`;
+            revalidatePath("/");
+            redirect("/");
+        } else {
+            alert("Username Already Taken");
+        }
     }
 }
