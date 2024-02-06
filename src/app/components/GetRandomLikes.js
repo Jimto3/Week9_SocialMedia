@@ -36,10 +36,10 @@ export default async function GetRandomLikes(post, id, name) {
             </h2>
         );
     } else {
-        let name1 = Math.random() * name.length;
-        let name2 = Math.random() * name.length;
+        let name1 = Math.floor(Math.random() * name.length);
+        let name2 = Math.floor(Math.random() * name.length);
         while (name1 == name2) {
-            let name2 = Math.random() * name.length;
+            let name2 = Math.floor(Math.random() * name.length);
         }
         return (
             <h2>
